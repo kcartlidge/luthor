@@ -76,6 +76,36 @@ namespace Luther.Tests
         }
 
         [Fact]
+        public void WithSource_CanPeek()
+        {
+            // Arrange.
+            var scanner = new Scanner(source);
+
+            // Act.
+            var ch = scanner.PeekNext();
+
+            // Assert.
+            ch.Value.Should().Be(source[0]);
+        }
+
+        [Fact]
+        public void GetNext_PassedEnd_PeekReturnsNull()
+        {
+            // Arrange.
+            var scanner = new Scanner(source);
+
+            // Act.
+            while (scanner.HasMore())
+            {
+                scanner.GetNext();
+            }
+            var result = scanner.PeekNext();
+
+            // Assert.
+            result.HasValue.Should().Be(false);
+        }
+
+        [Fact]
         public void GetCurrentPosition_GetsOffset()
         {
             // Arrange.

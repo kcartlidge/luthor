@@ -23,6 +23,16 @@ namespace Luthor
             return !HasMore();
         }
 
+        public char? PeekNext()
+        {
+            if (EndOfSource())
+            {
+                return null;
+            }
+
+            return _source[_offset];
+        }
+
         public char? GetNext()
         {
             if (EndOfSource())
