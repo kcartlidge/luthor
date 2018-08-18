@@ -33,13 +33,50 @@ namespace Luthor.Tests
         public void WithVaryingLineEndings_ReturnsCorrectLineCounts()
         {
             // Arrange.
-            Setup("1\r\n2\r2\r\n3\n\r4\n\r5\n\n7\r\n\n9");
+            Setup("  \r\r\n \n\r \n");
 
             // Act.
             var result = lexer.GetTokens();
 
             // Assert.
-            result.Last().Location.Line.Should().Be(9);
+            result.Last().Location.Line.Should().Be(4);
+        }
+
+        [Fact]
+        public void WithVaryingText_ReturnsCorrectRuns()
+        {
+            // Arrange.
+            Setup("Text 1234.1234\n -!ȫ");
+
+            // Act.
+            var result = lexer.GetTokens();
+
+            // Assert.
+            result.Select(x => x.Location.Line).Should().BeEquivalentTo(new int[]
+            {
+                1,1,1,1,1,1,2,2,2,2
+            });
+            result.Select(x => x.Location.Column).Should().BeEquivalentTo(new int[]
+            {
+                1,5,6,10,11,15,1,2,4,5
+            });
+            result.Select(x => x.Content.ToString()).Should().BeEquivalentTo(new string[]
+            {
+                "Text", " ", "1234", ".", "1234","\n", " ", "-!", "ȫ", ""
+            });
+            result.Select(x => x.TokenType).Should().BeEquivalentTo(new TokenTypes[]
+            {
+                TokenTypes.Letters,
+                TokenTypes.Whitespace,
+                TokenTypes.Digits,
+                TokenTypes.Symbols,
+                TokenTypes.Digits,
+                TokenTypes.EOL,
+                TokenTypes.Whitespace,
+                TokenTypes.Symbols,
+                TokenTypes.Other,
+                TokenTypes.EOF
+            });
         }
     }
 }
