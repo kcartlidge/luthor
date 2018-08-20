@@ -2,6 +2,8 @@
 
 Extract structure from any text using a generic lexer.
 
+[Available on NuGet](https://www.nuget.org/packages/Luthor/).
+
 Using *Luthor* you can quickly (and easily) convert any text string into a sequence of ```Token```, each of which represents an instance of a particular ```TokenType``` with a ```Content``` property holding the entire 'run' of that type of token.
 
 In essence you get a sequence of things which represent the contents in a higher level of abstraction, allowing you to process the text further without having to worry about the specifics of the text as you go (a classic example would be a parser).
