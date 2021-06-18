@@ -1,15 +1,15 @@
-using FluentAssertions;
 using Luthor;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
-using Xunit;
 
 namespace Luther.Tests
 {
+    [TestClass]
     public class ScannerTests
     {
         private const string source = "<html>\n<body>\n <h1>Hello world.</h1>\n</body>\n</html>";
 
-        [Fact]
+        [TestMethod]
         public void WithEmptySource_HasNoContent()
         {
             // Arrange.
@@ -19,10 +19,10 @@ namespace Luther.Tests
             var hasContent = scanner.HasMore();
 
             // Assert.
-            hasContent.Should().Be(false);
+            Assert.IsFalse(hasContent);
         }
 
-        [Fact]
+        [TestMethod]
         public void WithSource_HasSource()
         {
             // Arrange.
@@ -36,10 +36,10 @@ namespace Luther.Tests
             }
 
             // Assert.
-            result.ToString().Should().Be(source);
+            Assert.AreEqual(result.ToString(), source);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetNext_PassedEnd_ReturnsNull()
         {
             // Arrange.
@@ -53,10 +53,10 @@ namespace Luther.Tests
             var result = scanner.GetNext();
 
             // Assert.
-            result.HasValue.Should().Be(false);
+            Assert.IsFalse(result.HasValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetNext_HasNoMore_EndOfSourceIsTrue()
         {
             // Arrange.
@@ -70,12 +70,12 @@ namespace Luther.Tests
             }
 
             // Assert.
-            result.ToString().Length.Should().Be(source.Length);
-            scanner.HasMore().Should().Be(false);
-            scanner.EndOfSource().Should().Be(true);
+            Assert.AreEqual(source.Length, result.Length);
+            Assert.IsFalse(scanner.HasMore());
+            Assert.IsTrue(scanner.EndOfSource());
         }
 
-        [Fact]
+        [TestMethod]
         public void WithSource_CanPeek()
         {
             // Arrange.
@@ -85,10 +85,10 @@ namespace Luther.Tests
             var ch = scanner.PeekNext();
 
             // Assert.
-            ch.Value.Should().Be(source[0]);
+            Assert.AreEqual(source[0], ch.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetNext_PassedEnd_PeekReturnsNull()
         {
             // Arrange.
@@ -102,10 +102,10 @@ namespace Luther.Tests
             var result = scanner.PeekNext();
 
             // Assert.
-            result.HasValue.Should().Be(false);
+            Assert.IsFalse(result.HasValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetCurrentPosition_GetsOffset()
         {
             // Arrange.
@@ -120,7 +120,7 @@ namespace Luther.Tests
             var location = scanner.GetCurrentPosition();
 
             // Assert.
-            location.Should().Be(19);
+            Assert.AreEqual(19, location);
         }
     }
 }

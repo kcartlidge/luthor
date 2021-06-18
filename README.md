@@ -1,64 +1,83 @@
 # Luthor
 
-Extract structure from any text using a generic lexer.
+Extract structure from any text using a tokenising lexer.
 
 [Available on NuGet](https://www.nuget.org/packages/Luthor/).
 
-Using *Luthor* you can quickly (and easily) convert any text string into a sequence of ```Token```, each of which represents an instance of a particular ```TokenType``` with a ```Content``` property holding the entire 'run' of that type of token.
+Using *Luthor* you can convert any single or multiple line text into a collection containing runs of token types and their content. This provides access to the content at a higher level
+of abstraction, allowing further processing without having to worry about
+the specifics of the raw text.
 
-In essence you get a sequence of things which represent the contents in a higher level of abstraction, allowing you to process the text further without having to worry about the specifics of the text as you go (a classic example would be a parser).
+For each token you get the *offest*, the *line* number, the *column* within the line, and the *content*.
 
 For example:
 
 ```
-Sample text.\nAcross 2 lines.
+Sample text.
+Across 3 lines.
+With a "string".
 ```
 
-This gives a list of tokens like this:
+This gives a list of tokens like this (also including line number etc):
 
-```
-TokenType.Letters    - "sample"
-TokenType.Whitespace - " "
-TokenType.Letters    - "text"
-TokenType.Symbols    - "."
-TokenType.EOL        - "\n"
-TokenType.Letters    - "Across"
-TokenType.Whitespace - " "
-TokenType.Digits     - "2"
-TokenType.Whitespace - " "
-TokenType.Letters    - "lines"
-TokenType.Symbols    - "."
-TokenType.EOF        - ""
+``` ini
+Letters    = "Sample"
+Whitespace = " "
+Letters    = "text"
+Symbols    = "."
+EOL        = \n
+Letters    = "Across"
+Whitespace = " "
+Digits     = "3"
+Whitespace = " "
+Letters    = "lines"
+Symbols    = "."
+EOL        = \n
+Letters    = "With"
+Whitespace = " "
+Letters    = "a"
+Whitespace = " "
+String     = ""string""
+Symbols    = "."
+EOF        = ""
 ```
 
-Now your code can look at words, or keywords, or identifiers, or whatever it's context is expecting. No need to split text or manually hack at it.
+* Note the difference between `Letters` and `String`, the latter of which is quoted (single, double, or backticks) and can have other quotation symbols embedded within it.
+
+This means that instead of having to understand a stream of plain text your code
+can instead deal in tokens where that text has already been sensibly split - in many cases even discarding the `Whitespace` and/or `EOL` tokens entirely, making your next steps easier still.
+
+*Note that this uses a pre-defined set of tokens based on the English alphabet. See below for details.*
 
 ## Usage
 
-* Create a scanner
-* Pass it to Luther
-* Request the output
+To get the tokens from a given source text:
 
-```cs
-var scanner = new Scanner(sourceAsString);
-var lexer = new Lexer(scanner);
-var result = lexer.GetTokens();
+``` cs
+var tokens = new Lexer(sourceAsString).GetTokens();
 ```
 
-There's an optional parameter to ```GetTokens```, which is ```compressWhitespace``` (defaults to ```false```). If set, then runs of whitespace are all compressed down to a single space.
+To do the same, but with whitespace compressed to single spaces:
 
-## Output
+``` cs
+var tokens = new Lexer(sourceAsString).GetTokens(true);
+```
 
-* Linux/Unix, Mac OS, and Windows all have a ```\n``` as part (or all) of their line endings. Since Mac OS arrived, none of them rely solely on ```\r```. Therefore any ```\r``` characters are ignored entirely - they are neither in the output, nor do they impact column numbering.
-* Regardless of the presence/absence of ```Ctrl+Z``` or similar, the output will always end with an EOF token.
+## The output tokens
+
+### General comments
+
+- Linux/Unix, Mac OS, and Windows all have a `\n` (LF) in their line endings,
+  so `\r` (CR) is discarded and won't appear in any tokens.
+- There will always be a final EOF token, even for an empty input string.
 
 ### Token types
 
-* Whitespace - spaces, tabs
-* Letters - upper and lower case English alphabet
-* Digits - 0 to 9
-* Symbols - any of !£$%^&*()-_=+[]{};:'@#~,.<>/?\|
-* String - anything enclosed in either ", ', or `
-* Other - input characters not covered by other types
-* EOL - a ```\n```, regardless of whether ```\r``` was present 
-* EOF - automatically added
+* *Whitespace* - spaces, tabs
+* *Letters* - upper and lower case English alphabet
+* *Digits* - `0` to `9`
+* *Symbols* - any of `!£$%^&*()-_=+[]{};:'@#~,.<>/?\|`
+* *String* - anything enclosed in either `"`, `'`, or a backtick
+* *Other* - input characters not covered by other types
+* *EOL* - an LF (`\n`); any CRs (`\r`) are ignored
+* *EOF* - automatically added

@@ -1,162 +1,202 @@
-using FluentAssertions;
 using Luthor.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.Linq;
-using Xunit;
 
 namespace Luthor.Tests
 {
+    [TestClass]
     public class LexerTests
     {
         private Lexer lexer;
 
         private void Setup(string source)
         {
-            var scanner = new Scanner(source);
-            lexer = new Lexer(scanner);
+            lexer = new Lexer(source);
         }
 
-        [Fact]
+        [TestMethod]
         public void NoSource_ReturnsEOF()
         {
             // Arrange.
             Setup(string.Empty);
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens();
 
             // Assert.
-            result.Count.Should().Be(1);
-            result.First().TokenType.Should().Be(TokenTypes.EOF);
+            Assert.AreEqual(1, tokens.Count);
+            AssertToken(tokens, 0, TokenTypes.EOF, string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void WithVaryingLineEndings_ReturnsCorrectLineCounts()
         {
             // Arrange.
             Setup("  \r\r\n \n\r \n");
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens(true);
 
             // Assert.
-            result.Last().Location.Line.Should().Be(4);
+            Assert.AreEqual(4, tokens.Last().Location.Line);
         }
 
-        [Fact]
-        public void WithVaryingText_ReturnsCorrectRuns()
-        {
-            // Arrange.
-            Setup("Text 1234.1234\n -!ȫ");
-
-            // Act.
-            var result = lexer.GetTokens();
-
-            // Assert.
-            result.Select(x => x.Location.Line).Should().BeEquivalentTo(new int[]
-            {
-                1,1,1,1,1,1,2,2,2,2
-            });
-            result.Select(x => x.Location.Column).Should().BeEquivalentTo(new int[]
-            {
-                1,5,6,10,11,15,1,2,4,5
-            });
-            result.Select(x => x.Content.ToString()).Should().BeEquivalentTo(new string[]
-            {
-                "Text", " ", "1234", ".", "1234","\n", " ", "-!", "ȫ", ""
-            });
-            result.Select(x => x.TokenType).Should().BeEquivalentTo(new TokenTypes[]
-            {
-                TokenTypes.Letters,
-                TokenTypes.Whitespace,
-                TokenTypes.Digits,
-                TokenTypes.Symbols,
-                TokenTypes.Digits,
-                TokenTypes.EOL,
-                TokenTypes.Whitespace,
-                TokenTypes.Symbols,
-                TokenTypes.Other,
-                TokenTypes.EOF
-            });
-        }
-
-        [Fact]
+        [TestMethod]
         public void WithStrings_ReturnsStringRuns()
         {
             // Arrange.
             Setup("A \"simple string\" and 'single quotes' and `back-ticks`.");
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens();
 
             // Assert.
-            result[2].Content.ToString().Should().Be("\"simple string\"");
-            result[6].Content.ToString().Should().Be("'single quotes'");
-            result[10].Content.ToString().Should().Be("`back-ticks`");
-            result[2].TokenType.Should().Be(TokenTypes.String);
-            result[6].TokenType.Should().Be(TokenTypes.String);
-            result[10].TokenType.Should().Be(TokenTypes.String);
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "A");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "\"simple string\"");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "and");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "'single quotes'");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "and");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "`back-ticks`");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
+        public void WithStrings_FromREADME_ReturnsStringRuns()
+        {
+            // Arrange.
+            Setup("Sample text.\nAcross 3 lines.\nWith a \"string\".");
+
+            // Act.
+            var tokens = lexer.GetTokens();
+
+            // Assert.
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "Sample");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "text");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOL, "\n");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "Across");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Digits, "3");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "lines");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOL, "\n");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "With");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "a");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "\"string\"");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
+        }
+
+        [TestMethod]
         public void WithUnterminatedString_ReturnsStringRun()
         {
             // Arrange.
             Setup("An 'unterminated string");
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens();
 
             // Assert.
-            result[2].Content.ToString().Should().Be("'unterminated string");
-            result[2].TokenType.Should().Be(TokenTypes.String);
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "An");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "'unterminated string");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void WithString_WithLineBreak_ReturnsStringRunIncludingLineBreak()
         {
             // Arrange.
             Setup("A 'string with a \nnew line embedded'.");
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens();
 
             // Assert.
-            result[2].Content.ToString().Should().Be("'string with a \nnew line embedded'");
-            result[2].TokenType.Should().Be(TokenTypes.String);
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "A");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "'string with a \nnew line embedded'");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void WithString_WithEmbeddedStrings_ReturnsSingleStringRun()
         {
             // Arrange.
             Setup("A \"simple string `with` 'embedded' strings\".");
 
             // Act.
-            var result = lexer.GetTokens();
+            var tokens = lexer.GetTokens();
 
             // Assert.
-            result[2].Content.ToString().Should().Be("\"simple string `with` 'embedded' strings\"");
-            result[2].TokenType.Should().Be(TokenTypes.String);
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "A");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.String, "\"simple string `with` 'embedded' strings\"");
+            AssertToken(tokens, ref t, TokenTypes.Symbols, ".");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void WithWhitespace_RequestCompressed_ReturnsCompressed()
         {
             // Arrange.
             Setup("One two   three  \t \r four");
 
             // Act.
-            var result = lexer.GetTokens(true);
+            var tokens = lexer.GetTokens(true);
 
             // Assert.
-            result[1].Content.ToString().Should().Be(" ");
-            result[3].Content.ToString().Should().Be(" ");
-            result[5].Content.ToString().Should().Be(" ");
-            result[6].Content.ToString().Should().Be("four");
-            result[1].TokenType.Should().Be(TokenTypes.Whitespace);
-            result[3].TokenType.Should().Be(TokenTypes.Whitespace);
-            result[5].TokenType.Should().Be(TokenTypes.Whitespace);
-            result[6].TokenType.Should().Be(TokenTypes.Letters);
+            var t = 0;
+            AssertToken(tokens, ref t, TokenTypes.Letters, "One");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "two");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "three");
+            AssertToken(tokens, ref t, TokenTypes.Whitespace, " ");
+            AssertToken(tokens, ref t, TokenTypes.Letters, "four");
+            AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
+        }
+
+        // Asserts whether the tokens match.
+        private void AssertToken(
+            List<Token> tokens,
+            int index,
+            TokenTypes expectedTokenType,
+            string expectedContent)
+        {
+            Assert.IsTrue(tokens.Count > index, $"Insufficient tokens (index {index}, max {tokens.Count - 1}).");
+
+            var actual = tokens[index];
+            Assert.AreEqual(expectedTokenType, actual.TokenType, $"Index: {index}.");
+            Assert.AreEqual(expectedContent, actual.Content.ToString(), $"Index: {index}.");
+        }
+
+        // Asserts whether the tokens match, and increments the index ready for the next assertion.
+        private void AssertToken(
+            List<Token> tokens,
+            ref int index,
+            TokenTypes expectedTokenType,
+            string expectedContent)
+        {
+            AssertToken(tokens, index, expectedTokenType, expectedContent);
+            index += 1;
         }
     }
 }
