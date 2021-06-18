@@ -1,5 +1,7 @@
 # CHANGE LOG
 
+- Version 2.2.0
+    - Support getting tokens in line collections
 - Version 2.1.0
     - Support custom token characters
     - *Other* tokens now form runs

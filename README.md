@@ -54,13 +54,28 @@ This means that instead of having to understand a stream of plain text your code
 
 ``` csharp
 var tokens = new Lexer(sourceAsString).GetTokens();
+tokens.ForEach(x => Console.WriteLine($"{x.Location.Offset,3}: {x.TokenType} => {x.Content}"));
 ```
 
 *To do the same, but with each whitespace run compressed to a single space:*
 
 ``` csharp
 var tokens = new Lexer(sourceAsString).GetTokens(true);
+tokens.ForEach(x => Console.WriteLine($"{x.Location.Offset,3}: {x.TokenType} => {x.Content}"));
 ```
+
+*To get the tokens from a given source text as a collection of lines:*
+
+``` csharp
+var lines = new Lexer(sourceAsString).GetTokensAsLines();
+foreach (var line in lines)
+{
+    Console.WriteLine($"Line: {line.Key}");
+    line.Value.ForEach(x => Console.WriteLine($" {x.Location.Column,3}: {x.TokenType} => {x.Content}"));
+}
+```
+
+*This call also supports the whitespace compression optional argument to `GetTokensAsLines()`.*
 
 ## The output tokens
 

@@ -140,6 +140,33 @@ namespace Luthor
             return tokens;
         }
 
+        /// <summary>
+        /// Scans the source text and converts it to a sequence of tokens.
+        /// This is returned split as a list of numbered lines.
+        /// </summary>
+        /// <param name="compressWhitespace">
+        /// If true, runs of consecutive whitespace are compressed to single spaces.
+        /// </param>
+        /// <returns>
+        /// A collection of tokens representing the source text,
+        /// split as a list of numbered lines.
+        /// </returns>
+        public SortedList<int, List<Token>> GetTokensAsLines(bool compressWhitespace = false)
+        {
+            var tokens = GetTokens(compressWhitespace);
+            var lines = new SortedList<int, List<Token>>();
+
+            var lastLineNumber = -1;
+            foreach (var token in tokens)
+            {
+                var thisLineNumber = token.Location.Line;
+                if (thisLineNumber == lastLineNumber) lines[thisLineNumber].Add(token);
+                else lines[thisLineNumber] = new List<Token> { token };
+                lastLineNumber = thisLineNumber;
+            }
+            return lines;
+        }
+
         private bool Consume(List<Token> tokens, TokenTypes tokenType, Location location, string charset)
         {
             // If we're done (other than \r), exit and flag nothing happened.

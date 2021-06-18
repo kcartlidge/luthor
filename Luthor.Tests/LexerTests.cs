@@ -9,7 +9,7 @@ namespace Luthor.Tests
     public class LexerTests
     {
         [TestMethod]
-        public void NoSource_ReturnsEOF()
+        public void GetTokens_WithNoSource_ReturnsEOF()
         {
             // Arrange.
             var lexer = new Lexer(string.Empty);
@@ -23,7 +23,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithVaryingLineEndings_ReturnsCorrectLineCounts()
+        public void GetTokens_WithVaryingLineEndings_ReturnsCorrectLineCounts()
         {
             // Arrange.
             var lexer = new Lexer("  \r\r\n \n\r \n");
@@ -36,7 +36,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithOneOfEachKindOfToken_ReturnsCorrectTokens()
+        public void GetTokens_WithOneOfEachKindOfToken_ReturnsCorrectTokens()
         {
             // Arrange.
             var lexer = new Lexer("AB 01 +- 'AB' àë \n");
@@ -61,7 +61,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithStrings_ReturnsStringRuns()
+        public void GetTokens_WithStrings_ReturnsStringRuns()
         {
             // Arrange.
             var lexer = new Lexer("A \"simple string\" and 'single quotes' and `back-ticks`.");
@@ -87,7 +87,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithStrings_FromREADME_ReturnsStringRuns()
+        public void GetTokens_WithStrings_FromREADME_ReturnsStringRuns()
         {
             // Arrange.
             var lexer = new Lexer("Sample text.\nAcross 3 lines.\nWith a \"multi 'word' string\".");
@@ -119,7 +119,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithUnterminatedString_ReturnsStringRun()
+        public void GetTokens_WithUnterminatedString_ReturnsStringRun()
         {
             // Arrange.
             var lexer = new Lexer("An 'unterminated string");
@@ -136,7 +136,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithString_WithLineBreak_ReturnsStringRunIncludingLineBreak()
+        public void GetTokens_WithString_WithLineBreak_ReturnsStringRunIncludingLineBreak()
         {
             // Arrange.
             var lexer = new Lexer("A 'string with a \nnew line embedded'.");
@@ -154,7 +154,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithString_WithEmbeddedStrings_ReturnsSingleStringRun()
+        public void GetTokens_WithString_WithEmbeddedStrings_ReturnsSingleStringRun()
         {
             // Arrange.
             var lexer = new Lexer("A \"simple string `with` 'embedded' strings\".");
@@ -172,7 +172,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithWhitespace_RequestCompressed_ReturnsCompressed()
+        public void GetTokens_WithWhitespace_RequestCompressed_ReturnsCompressed()
         {
             // Arrange.
             var lexer = new Lexer("One two   three  \t \r four");
@@ -193,7 +193,7 @@ namespace Luthor.Tests
         }
 
         [TestMethod]
-        public void WithCustomTokenCharacters_ReturnsCorrectTokens()
+        public void GetTokens_WithCustomTokenCharacters_ReturnsCorrectTokens()
         {
             // Arrange.
             var lexer = new Lexer("11 22 3--3 44 555 ëë \n")
@@ -212,7 +212,7 @@ namespace Luthor.Tests
             var t = 0;
             AssertToken(tokens, ref t, TokenTypes.Letters, "11");
             AssertToken(tokens, ref t, TokenTypes.Other, " ");
-            AssertToken(tokens, ref t, TokenTypes.Digits , "22");
+            AssertToken(tokens, ref t, TokenTypes.Digits, "22");
             AssertToken(tokens, ref t, TokenTypes.Other, " ");
             AssertToken(tokens, ref t, TokenTypes.String, "3--3");
             AssertToken(tokens, ref t, TokenTypes.Other, " ");
@@ -222,6 +222,38 @@ namespace Luthor.Tests
             AssertToken(tokens, ref t, TokenTypes.Other, " ëë ");
             AssertToken(tokens, ref t, TokenTypes.EOL, "\n");
             AssertToken(tokens, ref t, TokenTypes.EOF, string.Empty);
+        }
+
+        [TestMethod]
+        public void GetTokensAsLines_WithSingleLineOfText_ReturnsSingleLineOfTokens()
+        {
+            // Arrange.
+            var lexer = new Lexer("Line 1");
+
+            // Act.
+            var lines = lexer.GetTokensAsLines();
+
+            // Assert.
+            Assert.AreEqual(1, lines.Count);
+            Assert.AreEqual(4, lines[1].Count, $"There should be a line 1 with 4 tokens.");
+        }
+
+        [TestMethod]
+        public void GetTokensAsLines_WithMultilinesText_ReturnsLinesOfTokens()
+        {
+            // Arrange.
+            var lexer = new Lexer("Line 1\nLine 2\nLine 3\n");
+
+            // Act.
+            var lines = lexer.GetTokensAsLines();
+
+            // Assert.
+            var t = 0;
+            Assert.AreEqual(4, lines.Count);
+            Assert.AreEqual(4, lines[++t].Count, $"There should be a line {t} with 4 tokens.");
+            Assert.AreEqual(4, lines[++t].Count, $"There should be a line {t} with 4 tokens.");
+            Assert.AreEqual(4, lines[++t].Count, $"There should be a line {t} with 4 tokens.");
+            Assert.AreEqual(1, lines[++t].Count, $"There should be a line {t} with a final EOF tokens.");
         }
 
         // Asserts whether the tokens match.
