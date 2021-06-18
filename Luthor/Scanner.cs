@@ -1,6 +1,6 @@
 namespace Luthor
 {
-    public class Scanner
+    internal class Scanner
     {
         private readonly string _source;
         private readonly int _maxOffset = 0;

@@ -18,9 +18,9 @@ namespace Luthor
         private int column;
         private char ch;
 
-        public Lexer(Scanner scanner)
+        public Lexer(string source)
         {
-            this.scanner = scanner;
+            scanner = new Scanner(source);
             line = 1;
             column = 1;
         }
@@ -28,13 +28,8 @@ namespace Luthor
         public List<Token> GetTokens(bool compressWhitespace = false)
         {
             var tokens = new List<Token>();
-            var location = new Location
-            {
-                Column = column,
-                Line = line,
-                Offset = scanner.GetCurrentPosition()
-            };
 
+            Location location;
             while (scanner.HasMore())
             {
                 // Consume one char and set the location.
