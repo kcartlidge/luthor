@@ -2,7 +2,9 @@
 
 Extract structure from any text using a tokenising lexer.
 
-[Available on NuGet](https://www.nuget.org/packages/Luthor/).
+- [Available on NuGet](https://www.nuget.org/packages/Luthor/)
+- [View the change log](./CHANGELOG.md)
+- [View the license](./LICENSE.txt)
 
 Using *Luthor* you can convert any single or multiple line text into a collection containing runs of token types and their content. This provides access to the content at a higher level
 of abstraction, allowing further processing without having to worry about
