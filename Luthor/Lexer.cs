@@ -5,31 +5,75 @@ using System.Text;
 
 namespace Luthor
 {
+    /// <summary>
+    /// Instances of this class convert text to a sequence of tokens.
+    /// </summary>
     public class Lexer
     {
-        private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        private const string digits = "0123456789";
-        private const string symbols = "!£$%^&*()-_=+[]{};:'@#~,.<>/?\\|";
-        private const string whitespace = " \t";
-        private const string quotes = "'\"`";
+        /// <summary>
+        /// The collection of characters representing standard letters (eg A, B).
+        /// </summary>
+        public string Chars { get; set; }
+
+        /// <summary>
+        /// The collection of characters representing standard digits (eg 0, 1).
+        /// </summary>
+        public string Digits { get; set; }
+
+        /// <summary>
+        /// The collection of characters representing symbols (eg !, +).
+        /// </summary>
+        public string Symbols { get; set; }
+
+        /// <summary>
+        /// The collection of characters representing whitespace (eg space, tab).
+        /// </summary>
+        public string Whitespace { get; set; }
+
+        /// <summary>
+        /// The collection of characters representing quote terminators (eg ", ').
+        /// </summary>
+        public string Quotes { get; set; }
 
         private readonly Scanner scanner;
         private int line;
         private int column;
         private char ch;
 
+        /// <summary>
+        /// Create a lexer for converting text to a sequence of tokens.
+        /// </summary>
+        /// <param name="source">
+        /// Text content to convert.
+        /// </param>
         public Lexer(string source)
         {
+            Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            Digits = "0123456789";
+            Symbols = "!£$%^&*()-_=+[]{};:'@#~,.<>/?\\|";
+            Whitespace = " \t";
+            Quotes = "'\"`";
+
             scanner = new Scanner(source);
             line = 1;
             column = 1;
         }
 
+        /// <summary>
+        /// Scans the source text and converts it to a sequence of tokens.
+        /// </summary>
+        /// <param name="compressWhitespace">
+        /// If true, runs of consecutive whitespace are compressed to single spaces.
+        /// </param>
+        /// <returns>
+        /// A collection of tokens representing the source text.
+        /// </returns>
         public List<Token> GetTokens(bool compressWhitespace = false)
         {
             var tokens = new List<Token>();
 
             Location location;
+            Token lastToken;
             while (scanner.HasMore())
             {
                 // Consume one char and set the location.
@@ -42,7 +86,7 @@ namespace Luthor
                 };
                 column += 1;
 
-                if (quotes.IndexOf(ch) > -1)
+                if (Quotes.IndexOf(ch) > -1)
                 {
                     // Start string, read all until the next *matching* string token.
                     var token = Token.Create(tokens, location, TokenTypes.String, ch);
@@ -64,7 +108,7 @@ namespace Luthor
                 else
                 {
                     // Consume specific types.
-                    if (Consume(tokens, TokenTypes.Whitespace, location, whitespace))
+                    if (Consume(tokens, TokenTypes.Whitespace, location, Whitespace))
                     {
                         if (compressWhitespace)
                         {
@@ -72,12 +116,16 @@ namespace Luthor
                         }
                         continue;
                     }
-                    if (Consume(tokens, TokenTypes.Letters, location, chars)) continue;
-                    if (Consume(tokens, TokenTypes.Digits, location, digits)) continue;
-                    if (Consume(tokens, TokenTypes.Symbols, location, symbols)) continue;
+                    if (Consume(tokens, TokenTypes.Letters, location, Chars)) continue;
+                    if (Consume(tokens, TokenTypes.Digits, location, Digits)) continue;
+                    if (Consume(tokens, TokenTypes.Symbols, location, Symbols)) continue;
 
-                    // Each remaining character is a unique token.
-                    Token.Create(tokens, location, TokenTypes.Other, ch);
+                    // Remaining characters form a run of 'Other' tokens.
+                    lastToken = tokens.Last();
+                    if (lastToken.TokenType == TokenTypes.Other)
+                        lastToken.Content.Append(ch);
+                    else
+                        Token.Create(tokens, location, TokenTypes.Other, ch);
                 }
             }
 

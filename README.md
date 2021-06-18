@@ -17,63 +17,56 @@ For example:
 ```
 Sample text.
 Across 3 lines.
-With a "string".
+With a "multi 'word' string".
 ```
 
 This gives a list of tokens like this (also including line number etc):
 
-``` ini
-Letters    = "Sample"
-Whitespace = " "
-Letters    = "text"
-Symbols    = "."
-EOL        = \n
-Letters    = "Across"
-Whitespace = " "
-Digits     = "3"
-Whitespace = " "
-Letters    = "lines"
-Symbols    = "."
-EOL        = \n
-Letters    = "With"
-Whitespace = " "
-Letters    = "a"
-Whitespace = " "
-String     = ""string""
-Symbols    = "."
-EOF        = ""
+``` json
+Letters    : "Sample"
+Whitespace : " "
+Letters    : "text"
+Symbols    : "."
+EOL        : \n
+Letters    : "Across"
+Whitespace : " "
+Digits     : "3"
+Whitespace : " "
+Letters    : "lines"
+Symbols    : "."
+EOL        : \n
+Letters    : "With"
+Whitespace : " "
+Letters    : "a"
+Whitespace : " "
+String     : ""multi 'word' string""
+Symbols    : "."
+EOF        : ""
 ```
 
 * Note the difference between `Letters` and `String`, the latter of which is quoted (single, double, or backticks) and can have other quotation symbols embedded within it.
 
-This means that instead of having to understand a stream of plain text your code
-can instead deal in tokens where that text has already been sensibly split - in many cases even discarding the `Whitespace` and/or `EOL` tokens entirely, making your next steps easier still.
-
-*Note that this uses a pre-defined set of tokens based on the English alphabet. See below for details.*
+This means that instead of having to understand a stream of plain text your code can deal in tokens, making your next steps simpler by working at a higher abstraction level.
 
 ## Usage
 
-To get the tokens from a given source text:
+*To get the tokens from a given source text:*
 
-``` cs
+``` csharp
 var tokens = new Lexer(sourceAsString).GetTokens();
 ```
 
-To do the same, but with whitespace compressed to single spaces:
+*To do the same, but with each whitespace run compressed to a single space:*
 
-``` cs
+``` csharp
 var tokens = new Lexer(sourceAsString).GetTokens(true);
 ```
 
 ## The output tokens
 
-### General comments
-
-- Linux/Unix, Mac OS, and Windows all have a `\n` (LF) in their line endings,
-  so `\r` (CR) is discarded and won't appear in any tokens.
-- There will always be a final EOF token, even for an empty input string.
-
 ### Token types
+
+These are the default definitions of the available tokens.
 
 * *Whitespace* - spaces, tabs
 * *Letters* - upper and lower case English alphabet
@@ -83,3 +76,30 @@ var tokens = new Lexer(sourceAsString).GetTokens(true);
 * *Other* - input characters not covered by other types
 * *EOL* - an LF (`\n`); any CRs (`\r`) are ignored
 * *EOF* - automatically added
+
+### Redefining the tokens
+
+*You can change the characters underlying the different token types:*
+
+``` csharp
+var lexer = new Lexer(sourceAsString)
+{
+    Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    Digits = "0123456789",
+    Symbols = "!£$%^&*()-_=+[]{};:'@#~,.<>/?\\|",
+    Whitespace = " \t",
+    Quotes = "'\"`",
+};
+var tokens = lexer.GetTokens();
+```
+
+The `Quotes` characters are handled differently from the others.
+Each one represents a valid start/end character ('terminators'), and the same character must be used to close the string as to open it.
+
+Other quote characters within the string (i.e. between the terminators) are considered plain content within the current string rather than terminators in their own right.
+
+### General comments
+
+- Linux/Unix, Mac OS, and Windows all have a `\n` (LF) in their line endings,
+  so `\r` (CR) is discarded and won't appear in any tokens.
+- There will always be a final EOF token, even for an empty input string.
