@@ -1,5 +1,7 @@
 # CHANGE LOG
 
+- Version 2.2.1
+    - Ensured XML comments are visible
 - Version 2.2.0
     - Support getting tokens in line collections
 - Version 2.1.0

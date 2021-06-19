@@ -6,9 +6,7 @@ Extract structure from any text using a tokenising lexer.
 - [View the change log](./CHANGELOG.md)
 - [View the license](./LICENSE.txt)
 
-Using *Luthor* you can convert any single or multiple line text into a collection containing runs of token types and their content. This provides access to the content at a higher level
-of abstraction, allowing further processing without having to worry about
-the specifics of the raw text.
+Using *Luthor* you can convert any single or multiple line text into a collection containing runs of token types and their content. This provides access to the content at a higher level of abstraction, allowing further processing without having to worry about the specifics of the raw text.
 
 For each token you get the *offest*, the *line* number, the *column* within the line, and the *content*.
 
@@ -46,8 +44,6 @@ EOF        : ""
 
 * Note the difference between `Letters` and `String`, the latter of which is quoted (single, double, or backticks) and can have other quotation symbols embedded within it.
 
-This means that instead of having to understand a stream of plain text your code can deal in tokens, making your next steps simpler by working at a higher abstraction level.
-
 ## Usage
 
 *To get the tokens from a given source text:*
@@ -75,7 +71,7 @@ foreach (var line in lines)
 }
 ```
 
-*This call also supports the whitespace compression optional argument to `GetTokensAsLines()`.*
+This call also supports the whitespace compression optional argument to `GetTokensAsLines()`.
 
 ## The output tokens
 
@@ -108,10 +104,9 @@ var lexer = new Lexer(sourceAsString)
 var tokens = lexer.GetTokens();
 ```
 
-The `Quotes` characters are handled differently from the others.
-Each one represents a valid start/end character ('terminators'), and the same character must be used to close the string as to open it.
+The `Quotes` characters are handled differently from the others. Each one represents a valid start/end character ('terminator'), and the same character must be used to close the string as to open it.
 
-Other quote characters within the string (i.e. between the terminators) are considered plain content within the current string rather than terminators in their own right.
+Other quote characters within the string (i.e. between the terminators) are considered plain content within the current string rather than terminators for new strings in their own right.
 
 ### General comments
 
