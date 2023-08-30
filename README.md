@@ -20,7 +20,7 @@ With a "multi 'word' string".
 
 This gives a list of tokens like this (also including line number etc):
 
-``` json
+```
 Letters    : "Sample"
 Whitespace : " "
 Letters    : "text"
@@ -56,6 +56,7 @@ tokens.ForEach(x => Console.WriteLine($"{x.Location.Offset,3}: {x.TokenType} => 
 *To do the same, but with each whitespace run compressed to a single space:*
 
 ``` csharp
+// The parameter in the call to GetTokens specifies whitespace compression.
 var tokens = new Lexer(sourceAsString).GetTokens(true);
 tokens.ForEach(x => Console.WriteLine($"{x.Location.Offset,3}: {x.TokenType} => {x.Content}"));
 ```

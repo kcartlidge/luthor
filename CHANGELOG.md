@@ -1,5 +1,8 @@
 # CHANGE LOG
 
+- Version 2.3.0
+    - Upgraded to DotNet 7
+    - Included README and license in package
 - Version 2.2.1
     - Ensured XML comments are visible
 - Version 2.2.0

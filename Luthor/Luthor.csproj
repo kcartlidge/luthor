@@ -1,22 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <PackageId>Luthor</PackageId>
-        <Version>2.2.1</Version>
-        <Authors>K Cartlidge</Authors>
-        <Company>K Cartlidge</Company>
+        <Version>2.3.0</Version>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>Luthor</Title>
-        <PackageTags>Text;Parse;Parsing;Parser;Tokens;Tokenise;Tokenising;Tokeniser;Lexer</PackageTags>
+        <Company>K Cartlidge</Company>
+        <Authors>K Cartlidge</Authors>
         <Description>Extract structure from any text using a tokenising lexer.
 
 Convert any single or multiple line text into a collection containing runs of token types and their content.
 </Description>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/kcartlidge/luthor</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/kcartlidge/luthor</PackageProjectUrl>
+        <Summary>Extract structure from any text using a tokenising lexer.</Summary>
+        <Copyright>K Cartlidge</Copyright>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageProjectUrl>https://github.com/kcartlidge/luthor</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/kcartlidge/luthor</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
+        <PackageTags>Text;Parse;Parsing;Parser;Tokens;Tokenise;Tokenising;Tokeniser;Lexer</PackageTags>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -29,5 +33,13 @@ Convert any single or multiple line text into a collection containing runs of to
             <_Parameter1>$(MSBuildProjectName).Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
 </Project>
